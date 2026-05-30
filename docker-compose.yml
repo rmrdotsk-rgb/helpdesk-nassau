@@ -1,0 +1,32 @@
+# Sobe apenas o banco de dados PostgreSQL em um container.
+# O backend (FastAPI) e o frontend (React) rodam localmente na maquina,
+# o que deixa o desenvolvimento no Windows simples e rapido.
+#
+# Como usar:
+#   docker compose up -d      -> inicia o Postgres em segundo plano
+#   docker compose ps         -> verifica se esta no ar
+#   docker compose down       -> para o container (os dados ficam salvos no volume)
+#   docker compose down -v    -> para e APAGA os dados (recomeçar do zero)
+
+services:
+  db:
+    image: postgres:16
+    container_name: helpdesk_nassau_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: helpdesk
+      POSTGRES_PASSWORD: helpdesk
+      POSTGRES_DB: helpdesk_nassau
+    ports:
+      # host:container -> a aplicacao se conecta em localhost:5432
+      - "5432:5432"
+    volumes:
+      - helpdesk_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U helpdesk -d helpdesk_nassau"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  helpdesk_pgdata:
